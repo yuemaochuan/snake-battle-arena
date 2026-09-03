@@ -1,0 +1,12 @@
+{
+  "name": "snake-battle-arena",
+  "version": "1.0.0",
+  "description": "贪吃蛇大乱斗 - 多人在线联机游戏（零依赖服务器）",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/"
+  },
+  "license": "MIT",
+  "private": true
+}
