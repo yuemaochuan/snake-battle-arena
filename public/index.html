@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#171009">
+<meta name="description" content="贪吃奶娃大乱斗：局域网/互联网都能玩的多人贪吃蛇对战，电脑与手机浏览器直接加入，无需安装。">
+<title>🍼 贪吃奶娃大乱斗 - 多人联机</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍼</text></svg>">
+</head>
+<body>
+
+<!-- 氛围背景（纯装饰，不挡操作） -->
+<div class="bg-deco" aria-hidden="true">
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <span class="float f1">🍼</span>
+  <span class="float f2">☀️</span>
+  <span class="float f3">🍬</span>
+  <span class="float f4">🪨</span>
+</div>
+
+<!-- ========== 首页：昵称 / 创建 / 加入 ========== -->
+<div id="screen-home" class="screen">
+  <div class="home-card">
+    <div class="logo">
+      <span class="logo-ic">🍼</span>
+      <span class="logo-word"><em>贪吃奶娃</em><b>大乱斗</b></span>
+      <span class="logo-live">● LIVE</span>
+    </div>
+    <div class="subtitle">多人联机 · 吃奶糖长大 · 小心毒太阳 · 活到最后是冠军</div>
+
+    <div class="chips">
+      <span class="chip">👥 最高 16 人对战</span>
+      <span class="chip">⚡ 冲刺加速</span>
+      <span class="chip">👑 房主换玩法</span>
+    </div>
+
+    <div class="field">
+      <label for="inp-name">你的昵称</label>
+      <input id="inp-name" maxlength="12" placeholder="输入昵称" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label>蛇的颜色</label>
+      <div id="color-picker"></div>
+    </div>
+
+    <div class="field">
+      <button id="btn-create" class="btn btn-primary btn-big">🎮 创建房间</button>
+    </div>
+
+    <div class="divider"><span>或</span></div>
+
+    <div class="join-row">
+      <input id="inp-code" inputmode="numeric" maxlength="6" placeholder="输入 6 位房间号">
+      <button id="btn-join" class="btn btn-join">加入房间</button>
+    </div>
+
+    <div class="hint-box">
+      <div class="hint-title">📢 如何和朋友一起玩？</div>
+      <div class="hint-step">1. 打开这个页面的地址（其他电脑 / 手机也打开<b>同一个网址</b>）</div>
+      <div class="hint-step">2. 一个人点 <b>创建房间</b>，把 6 位房间号告诉朋友</div>
+      <div class="hint-step">3. 其他人输入房间号点 <b>加入房间</b> 即可，无需安装任何软件</div>
+      <div id="addr-line"></div>
+    </div>
+
+    <a class="doc-link" href="使用说明.jpg" target="_blank" rel="noopener">📖 打开《使用说明》图片版（发给朋友看）</a>
+
+    <div class="tips">
+      <div>🍼 蛇头是奶娃，吃「奶糖」会变长；场上会冒出 ☀️ 太阳毒药，吃到就出局</div>
+      <div>⌨️ 方向键 / WASD 转向，<b>空格或鼠标按住</b>加速（加速消耗长度，尾巴变回奶糖）</div>
+      <div>📱 手机上用屏幕上的方向按钮操作，页面会自动适配屏幕</div>
+      <div>👑 房主可选玩法：经典 / 穿越 / 障碍；撞蛇或撞到自己都会被淘汰</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 房间页：大厅 / 对局 ========== -->
+<div id="screen-room" class="screen hidden">
+  <header id="topbar">
+    <button id="btn-leave" class="btn btn-ghost btn-small">← 离开</button>
+    <div class="room-code-box">
+      <span class="room-code-label">房间号</span>
+      <span id="room-code" class="room-code"></span>
+      <button id="btn-copy" class="btn btn-mini">复制</button>
+    </div>
+    <span id="conn-state" class="conn ok">● 已连接</span>
+    <div id="phase-info" class="phase-info"></div>
+    <button id="btn-mute" class="btn btn-ghost btn-small icon-btn" title="声音开关" aria-label="声音开关">🔊</button>
+  </header>
+
+  <div id="layout">
+    <div id="stage-wrap">
+      <canvas id="stage"></canvas>
+
+      <!-- 掉线横幅 -->
+      <div id="net-banner" class="stage-banner hidden">连接断开，正在重新连接…</div>
+
+      <!-- 倒计时/对局覆盖层 -->
+      <div id="overlay-cd" class="stage-overlay hidden"><div id="cd-num">3</div><div class="cd-tip">准备出击！</div></div>
+      <div id="overlay-over" class="stage-overlay hidden">
+        <div class="over-ic">🏆</div>
+        <div id="over-title">本局冠军</div>
+        <div id="over-winners"></div>
+        <div id="over-stats"></div>
+        <div id="over-next" class="dim">即将自动开始下一局…</div>
+        <button id="btn-next-round" class="btn btn-skip">⏭ 立即开始下一局</button>
+      </div>
+
+      <!-- 淘汰提示 -->
+      <div id="dead-banner" class="stage-banner dead hidden">💀 你被淘汰了 · 观战中 · 下一局自动复活</div>
+
+      <!-- 触屏按钮（手机/平板用） -->
+      <div id="touch-ctrl" class="hidden" aria-label="触屏方向键">
+        <div class="dpad">
+          <button class="d-btn up" data-d="3" aria-label="向上"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5l8 12H4z"/></svg></button>
+          <button class="d-btn left" data-d="2" aria-label="向左"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12L17 4v16z"/></svg></button>
+          <button class="d-btn right" data-d="0" aria-label="向右"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12L7 4v16z"/></svg></button>
+          <button class="d-btn down" data-d="1" aria-label="向下"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19L4 7h16z"/></svg></button>
+        </div>
+        <button id="btn-boost-touch" aria-label="加速"><span class="boost-ic">⚡</span><span class="boost-tx">加速</span></button>
+      </div>
+    </div>
+
+    <aside id="side">
+      <div id="player-panel" class="panel">
+        <div class="panel-title">👥 玩家 <span id="player-count"></span></div>
+        <div id="player-list"></div>
+      </div>
+      <div id="host-panel" class="panel hidden">
+        <div class="panel-title">👑 房主设置</div>
+        <div class="cfg-row">
+          <label>玩法模式</label>
+          <div id="mode-seg" class="mode-seg"></div>
+          <span id="cur-mode" class="cur-mode"></span>
+        </div>
+        <div class="cfg-row">
+          <label for="sel-duration">每局时长</label>
+          <select id="sel-duration">
+            <option value="180000">3 分钟</option>
+            <option value="300000" selected>5 分钟</option>
+            <option value="600000">10 分钟</option>
+            <option value="900000">15 分钟</option>
+          </select>
+        </div>
+        <div id="net-share" class="net-share hidden">
+          <button id="btn-tunnel" class="btn btn-tunnel">🌐 生成公网邀请链接</button>
+          <div id="tunnel-info" class="hidden"></div>
+        </div>
+        <button id="btn-start" class="btn btn-primary btn-big">▶ 开始游戏</button>
+        <div id="wait-msg" class="dim hidden">等待房主开始游戏…</div>
+        <div class="rules">
+          不同玩法出局条件不同：经典/障碍撞墙出局，穿越可穿墙；无论哪种玩法，撞到别的蛇、撞到自己、吃到 ☀️ 毒太阳都会出局。被淘汰的蛇会变回满场奶糖。按住加速会变短并把尾巴变成奶糖。存活到最后获胜；时间到则最长者获胜。<br>
+          <span id="mode-desc" class="mode-desc"></span>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- 全局提示（任何界面都可见，不挡操作） -->
+<div id="toasts"></div>
+
+<script src="game.js"></script>
+</body>
+</html>
