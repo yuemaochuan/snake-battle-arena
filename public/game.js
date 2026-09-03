@@ -277,6 +277,11 @@ function init() {
   el.duration.addEventListener('change', () => { if (ws) ws.send(JSON.stringify({ t: 'cfg', d: parseInt(el.duration.value, 10) })); });
   el.btnTunnel.addEventListener('click', () => { toggleNetShare(); snd.click(); });
 
+  // 免费托管平台闲置会休眠且纯 WebSocket 流量不算活动：页面开着时定期发 HTTP 心跳保活
+  setInterval(() => {
+    if (ws && ws.readyState === 1) fetch('/api/ping', { cache: 'no-store' }).catch(() => {});
+  }, 120000);
+
   // 玩法模式按钮（房主任意阶段可切：大厅/倒计时/结算立即生效，对局中=本局结束后生效）
   for (const mm of ['classic', 'wrap', 'obstacle']) {
     const b = document.createElement('button');
